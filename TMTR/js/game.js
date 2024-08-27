@@ -221,6 +221,7 @@ function doReset(layer, force=false) {
 		rowReset(r, layer)
 	}
 
+	player[layer].bestResetTime = player[layer].resetTime//peit的作者每日一懒改源码,啊!0116个0a7,你不要过来啊!
 	player[layer].resetTime = 0
 
 	updateTemp()

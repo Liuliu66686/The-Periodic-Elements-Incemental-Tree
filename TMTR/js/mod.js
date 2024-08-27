@@ -13,11 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.3+",
-	name: "第二周期更新III前沿text4???",
+	num: "0.4",
+	name: "第二周期更新V",
 }
 
 let changelog = `<h1>更新日志:</h1><br>
+	<h3>v0.4</h3><br>
+		- 添加硼层机制<br>
+		- 添加碳层<br>
+		注:这是短期内(可能一年内)的最后一次更新了,可以去支持作者的新树增量树谢谢喵!<br>
+		群号: 951232913<br>
 	<h3>v0.3.3+</h3><br>
 		- 修复一个有关于text4的bug(关键是这个b....bug没测试到)<br>
 	<h3>v0.3.3</h3><br>
@@ -44,7 +49,7 @@ let changelog = `<h1>更新日志:</h1><br>
 		- 增加基本粒子层与2buyable与9upgrade<br>
 		- 增加氢层`
 
-let winText = `恭喜！你 >暂时< 通关了！`
+let winText = `恭喜！你 >暂时< 通关了！...再见`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -87,6 +92,11 @@ function getPointGen() {
 	if(hasMilestone("h",3)) gain = gain.mul(layers.he.balloonBoostPoints())
 	if(player.he.upTime.gt(0)) gain = gain.mul(layers.he.boomedBalloonBoostPoints())
 	if(hasMilestone("he",2)) gain = gain.mul(layers.he.temPointBoostPoints())
+	if(hasUpgrade("b",12)) gain = gain.mul(upgradeEffect("b",12))
+	if(hasUpgrade("b",43)) gain = gain.mul(upgradeEffect("b",43))
+	if(player.c.energy.gte(1)) gain = gain.mul(layers.c.CEeffect1())
+
+	if(player.b.inBorane) gain = gain.pow(0.75)
 	return gain
 }
 
@@ -104,7 +114,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.b.points.gte(6)
+	return hasUpgrade("c",11)
 }
 
 

@@ -13,16 +13,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.4",
+	num: "0.4+",
 	name: "第二周期更新V",
 }
 
 let changelog = `<h1>更新日志:</h1><br>
+	<h3>v0.4+</h3><br>
+		- 作者在元旦偷偷更新了<br>
+		- 修复了碳能量开局生产的bug<br>
+		- 没了<br>
+		- 注:这是短期内(可能半年内)的最后一次更新了,可以去支持作者的新作禁言增量页谢谢喵!<br>
+		- 群号: 951232913<br>
 	<h3>v0.4</h3><br>
 		- 添加硼层机制<br>
 		- 添加碳层<br>
-		注:这是短期内(可能一年内)的最后一次更新了,可以去支持作者的新树增量树谢谢喵!<br>
-		群号: 951232913<br>
 	<h3>v0.3.3+</h3><br>
 		- 修复一个有关于text4的bug(关键是这个b....bug没测试到)<br>
 	<h3>v0.3.3</h3><br>
@@ -110,6 +114,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"群号: 951232913"
 ]
 
 // Determines when the game "ends"

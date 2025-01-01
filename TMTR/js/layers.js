@@ -3804,7 +3804,7 @@ addLayer("c", {
         return eff
     },
     update(diff){
-        player.c.energy = player.c.energy.add(milestoneEffect("c",0).mul(diff))
+        if(hasMilestone("c",0)) player.c.energy = player.c.energy.add(milestoneEffect("c",0).mul(diff))
         if(hasUpgrade("c",11)){
             buyUpgrade("li",11);buyUpgrade("li",12);buyUpgrade("li",21)
             buyUpgrade("be",11);buyUpgrade("be",12);buyUpgrade("be",13);buyUpgrade("be",14);buyUpgrade("be",15);buyUpgrade("be",21);buyUpgrade("be",23);buyUpgrade("be",22);buyUpgrade("be",24);buyUpgrade("be",25);buyUpgrade("be",31);buyUpgrade("be",32);buyUpgrade("be",33);buyUpgrade("be",34);buyUpgrade("be",35)

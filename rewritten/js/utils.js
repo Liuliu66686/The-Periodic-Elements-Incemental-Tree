@@ -164,7 +164,7 @@ function showNavTab(name, prev) {
 	if (tmp[name] && tmp[name].previousTab !== undefined) prev = tmp[name].previousTab
 	var toTreeTab = name == "tree-tab"
 	console.log(name + prev)
-	if (name!== "none" && prev && !tmp[prev]?.leftTab == !tmp[name]?.leftTab) player[name].prevTab = prev
+	if (name!== "none" && prev && (!tmp[prev] || {}).leftTab == (!tmp[name] || {}).leftTab) player[name].prevTab = prev
 	else if (player[name])
 		player[name].prevTab = ""
 	player.navTab = name
@@ -177,7 +177,7 @@ function goBack(layer) {
 	let nextTab = "none"
 
 	if (player[layer].prevTab) nextTab = player[layer].prevTab
-	if (player.navTab === "none" && (tmp[layer]?.row == "side" || tmp[layer].row == "otherside")) nextTab = player.lastSafeTab
+	if (player.navTab === "none" && ((tmp[layer] || {}).row == "side" || tmp[layer].row == "otherside")) nextTab = player.lastSafeTab
 
 	if (tmp[layer].leftTab) showNavTab(nextTab, layer)
 	else showTab(nextTab, layer)

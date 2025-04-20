@@ -164,9 +164,9 @@ function updateTabFormats() {
 }
 
 function updateTabFormat(layer) {
-	if (layers[layer]?.tabFormat === undefined) return
+	if ((layers[layer] || {}).tabFormat === undefined) return
 
-	let tab = player.subtabs[layer]?.mainTabs
+	let tab = (player.subtabs[layer] || {}).mainTabs
 	if (isFunction(layers[layer].tabFormat)) {
 		Vue.set(temp[layer], 'tabFormat', layers[layer].tabFormat())
 	}

@@ -1,5 +1,5 @@
 // ************ Save stuff ************
-let getModID = () => modInfo.id ?? `${modInfo.name.replace(/\s+/g, '-')}-${modInfo.author.replace(/\s+/g, '-')}`;
+let getModID = () => modInfo.id || `${modInfo.name.replace(/\s+/g, '-')}-${modInfo.author.replace(/\s+/g, '-')}`;
 
 function save(force) {
 	NaNcheck(player)

@@ -23,11 +23,11 @@ function challengeCompletions(layer, id) {
 }
 
 function canEnterChallenge(layer, id){
-	return tmp[layer].challenges[id].canEnter ?? true
+	return tmp[layer].challenges[id].canEnter || true
 }
 
 function canExitChallenge(layer, id){
-	return tmp[layer].challenges[id].canExit ?? true
+	return tmp[layer].challenges[id].canExit || true
 }
 
 function getBuyableAmount(layer, id) {

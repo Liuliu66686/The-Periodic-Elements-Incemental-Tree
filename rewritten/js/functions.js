@@ -35,7 +35,7 @@ function powsoftcap(num,start,power){
 //对数软上限
 function logsoftcap(num,start,floor){
 	if(num.gt(start)){
-		num = num.div(start).log(floor).add(start)
+		num = num.div(start).log(floor).mul(start)
 	}
     return num
 }
@@ -100,7 +100,7 @@ function quickUpgBuyorSell(layer, IDs ,bos) {
         }
     }
 }
-//同时自动购买多个升级 #Liuliu66686提供
+//同时购买多个升级 #Liuliu66686提供
 function quickUpgBuy(layer, IDs) {
     for (id in IDs){
         buyUpgrade(layer,IDs[id])
@@ -120,4 +120,42 @@ function quickSpawnConst(r,c,grid=false) {
       for(j=1;j<=c;j++)  a.push(i*x+j)
      }
     return a
+}
+//计算标准差函数 (Decimal)
+function sigmaCalculation(list){
+    let a = zero;let b = zero
+    for(num in list){a = a.add(list[num])}
+    a = a.div(list.length)
+    for(num in list){b = b.add(n(list[num].sub(a)).pow(2))}
+    b = b.div(list.length).root(2)
+    return b
+}
+//快速更改数组元素
+function quickChangeConstElements(elm,cst){
+    if(cst.includes(elm)) cst.splice(cst.indexOf(elm),1)
+    else cst.push(elm)
+}
+
+//以下为peitr的自制函数
+//获取某内置层重置效果
+function quickResetLayers(layer){
+    if(layer=="quark"){
+        player.points = player.p.filling = zero
+        quickUpgBuyorSell("p",quickSpawnConst(1,5),false)
+        player.p.colors = [zero,zero,zero]
     }
+}
+//格式统一化用的 获取里程碑效果
+function milestoneEffect(layer, id) {
+	return (tmp[layer].milestones[id].effect)
+}
+
+/*
+function quickStyle(bdcolor,bgcolor,bdr,tcolor){
+    if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+    else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+        bdcolor = '';bdr = '20px'
+    }
+    return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+}
+    */

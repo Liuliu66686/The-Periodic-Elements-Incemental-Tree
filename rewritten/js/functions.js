@@ -149,7 +149,10 @@ function quickResetLayers(layer){
 function milestoneEffect(layer, id) {
 	return (tmp[layer].milestones[id].effect)
 }
-
+//获取自动化开启
+function autoOpening(id){
+    return (tmp.at.clickables["At-"+id].canRun)
+}
 /*
 function quickStyle(bdcolor,bgcolor,bdr,tcolor){
     if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}

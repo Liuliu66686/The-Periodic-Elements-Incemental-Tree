@@ -442,7 +442,7 @@ addLayer("p", {
             onClick(){
                 player.p.points = player.p.points.add(this.getQuark())
                 player.p.quarkMax = player.p.quarkMax.add(this.getQuark())
-                quickResetLayers("quark")
+                if(!autoOpening("QNR")) quickResetLayers("quark")
             },
             style(){return { 'background':this.canClick()?'linear-gradient(to right,white 12%, grey 100%)':'#bf8f8f','border-radius': "0px",height: "120px", width: "200px"}},
             unlocked(){return hasUpgrade("p",21)||player.li.unlocked}
@@ -495,6 +495,8 @@ addLayer("p", {
         if(hasUpgrade("p",34)) mult = mult.mul(upgradeEffect("p",34))
         if(hasUpgrade("h",23)) mult = mult.mul(upgradeEffect("h",23))
         if(hasUpgrade("he",13)) mult = mult.mul(upgradeEffect("he",13))
+        if(hasUpgrade("li",11)) mult = mult.mul(upgradeEffect("li",11))
+        if(hasUpgrade("li",21)) mult = mult.mul(upgradeEffect("li",21))
 	    if(getBuyableAmount("he","He-4").gt(0)) mult = mult.mul(buyableEffect("he","He-4"))
         return mult
     },
@@ -695,6 +697,7 @@ addLayer("h", {
         if(hasMilestone("he",2)) mult = mult.mul(milestoneEffect("he",2)[0])
         if(player.he.upTimes[1].gt(0)) mult = mult.mul(clickableEffect("he","Blm-bh")[0])
 	    if(hasMilestone("li",0)) mult = mult.mul(4)
+        if(hasUpgrade("li",14)) mult = mult.mul(upgradeEffect("li",14))
         return mult
     },
     gainExp(){
@@ -709,6 +712,11 @@ addLayer("h", {
         }
     },
     layerShown(){return player.p.canHshown||player.h.unlocked},
+    resetsNothing(){return autoOpening("HNR")},
+    passiveGeneration(){
+        if(autoOpening("AGH")) return n(0.1)
+        return undefined
+    },
     hotkeys: [
         {key: "r", description: "R: 对粒子收集器进行充能", onPress(){clickClickable("p","Ptc-1")}},
         {key: "q", description: "Q: 进行夸克重置", onPress(){clickClickable("p","Ptc-2")}},
@@ -863,6 +871,7 @@ addLayer("h", {
                 gain = gain.mul(layers.p.haDron("effect")[2])
                 gain = powsoftcap(gain,n(1e25),four)
                 if(hasUpgrade("he",33)) gain = gain.mul(upgradeEffect("he",33))
+                if(hasUpgrade("li",12)) gain = gain.mul(upgradeEffect("li",12))
                 if(hasMilestone("he",2)) gain = gain.mul(milestoneEffect("he",2)[1])
                 if(player.he.upTimes[0].gt(0)) gain = gain.mul(clickableEffect("he","Blm-bhe")[2])
                 if(player.he.upTimes[1].gt(0)) gain = gain.mul(clickableEffect("he","Blm-bh")[2])
@@ -1007,6 +1016,7 @@ addLayer("he", {
         if(hasMilestone("he",0)) mult = mult.div(milestoneEffect("he",0)[0])
         if(player.he.upTimes[0].gt(0)) mult = mult.div(clickableEffect("he","Blm-bhe")[1])
 	    if(hasMilestone("li",0)) mult = mult.div(16)
+        if(hasUpgrade("li",14)) mult = mult.div(upgradeEffect("li",14))
         return mult
     },
     gainExp(){
@@ -1022,10 +1032,11 @@ addLayer("he", {
     },
     layerShown(){return player.h.energy.gt(1e20)||player.he.unlocked},
     canBuyMax(){return hasUpgrade("he",23)},
+    resetsNothing(){return autoOpening("HeNR")},
+    autoPrestige(){return autoOpening("HeAR")},
     hotkeys: [
         {key: "v", description: "V: 向内燃机内填充氢气和空气", onPress(){clickClickable("h","Cbt-h");clickClickable("h","Cbt-a")}},
         {key: "b", description: "B: 进行燃烧", onPress(){clickClickable("h","Cbt-b")}},
-        {key: "j", description: "J: 进行氦重置", onPress(){if(canReset(this.layer)) doReset(this.layer)}},
     ],
     upgrades:{
         11:{
@@ -1149,7 +1160,8 @@ addLayer("he", {
             effect(){
                 let eff = []
                 for(id in [0,1]){
-                    eff.push(player.he.boomedNum[id].max(0).add(1).root(2))
+                    if(hasUpgrade("li",22)) eff.push(player.he.boomedNum[id].max(0).add(1).root(2).max(n(5/4).pow(player.he.boomedNum[id])))
+                    else eff.push(player.he.boomedNum[id].max(0).add(1).root(2))
                 }
                 return eff
             },
@@ -1292,7 +1304,7 @@ addLayer("he", {
             canClick(){return hasUpgrade("he",31)&&this.heliumGain().gte(1)},
             onClick(){
                 player.he.helium = player.he.helium.add(this.heliumGain())
-                player.he.points = player.he.points.div(2).add(0.75).floor() //奇葩操作大赏
+                if(!autoOpening("GLNR")) player.he.points = player.he.points.div(2).add(0.75).floor() //奇葩操作大赏
             },
             heliumBase(){
                 let powbase = two
@@ -1315,7 +1327,7 @@ addLayer("he", {
             canClick(){return hasMilestone("he",1)&&this.hydrogenGain().gte(1)},
             onClick(){
                 player.h.hydrogen = player.h.hydrogen.add(this.hydrogenGain())
-                player.h.energy = player.h.energy.div(2)
+                if(!autoOpening("GLNR")) player.h.energy = player.h.energy.div(2)
             },
             hydrogenGain(){
                 gainbase = two
@@ -1335,10 +1347,12 @@ addLayer("he", {
             canClick(){return hasUpgrade("he",31)&&this.getGain().gt(player.he.balloons)},
             onClick(){
                 player.he.balloons = this.getGain()
-                player.he.helium = zero
+                if(!autoOpening("BLNR")) player.he.helium = zero
             },
             getBase(){
-                return ten
+                let base = ten
+                if(hasUpgrade("li",24)) base = base.sub(upgradeEffect("li",24))
+                return base
             },
             getGain(){
                 let gain = player.he.helium.max(this.getBase()).log(this.getBase()).sub(1).floor()
@@ -1354,14 +1368,16 @@ addLayer("he", {
         },
         "Blm-h":{
             title(){return "将氢气充入气球"},
-            display(){return "将现有的所有氢气转化为氢气球,充气后获得 "+formatWhole(this.getGain().sub(player.h.balloons).max(0))+" 氦气球<br>下一个氢气球在 "+format(this.getNext())+" 氢气"},
+            display(){return "将现有的所有氢气转化为氢气球,充气后获得 "+formatWhole(this.getGain().sub(player.h.balloons).max(0))+" 氢气球<br>下一个氢气球在 "+format(this.getNext())+" 氢气"},
             canClick(){return hasMilestone("he",1)&&this.getGain().gt(player.h.balloons)},
             onClick(){
                 player.h.balloons = this.getGain()
-                player.h.hydrogen = zero
+                if(!autoOpening("BLNR")) player.h.hydrogen = zero
             },
             getBase(){
-                return ten
+                let base = ten
+                if(hasUpgrade("li",24)) base = base.sub(upgradeEffect("li",24))
+                return base
             },
             getGain(){
                 let gain = player.h.hydrogen.max(this.getBase()).log(this.getBase()).sub(1).floor()
@@ -1381,7 +1397,7 @@ addLayer("he", {
             canClick(){return hasMilestone("he",3)&&player.he.balloons.gte(2)},
             onClick(){
                 if(!hasMilestone("he",4)) player.he.upTimes[1] = zero
-                player.he.upTimes[0] = player.he.upTimes[0].add(this.getTime()).min(300)
+                player.he.upTimes[0] = player.he.upTimes[0].add(this.getTime()).min(hasUpgrade("li",23)?3600:300)
                 player.he.boomedNum[0] = player.he.boomedNum[0].add(this.boomedNum()).div(2)
                 player.he.balloons = player.he.balloons.sub(this.boomedNum())
             },
@@ -1411,7 +1427,7 @@ addLayer("he", {
             canClick(){return hasMilestone("he",3)&&player.h.balloons.gte(10)},
             onClick(){
                 if(!hasMilestone("he",4)) player.he.upTimes[0] = zero
-                player.he.upTimes[1] = player.he.upTimes[1].add(this.getTime()).min(300)
+                player.he.upTimes[1] = player.he.upTimes[1].add(this.getTime()).min(hasUpgrade("li",23)?3600:300)
                 player.he.boomedNum[1] = player.he.boomedNum[1].add(this.boomedNum()).div(2)
                 player.h.balloons = player.h.balloons.sub(this.boomedNum())
             },
@@ -1565,6 +1581,7 @@ addLayer("li", {
         unlocked: false,
         points: zero,
         perkpoints: zero,
+        total: zero,
     }},
     color: "#f05c82",
     requires: new Decimal(1e192),
@@ -1572,13 +1589,12 @@ addLayer("li", {
     baseResource: "基本粒子",
     baseAmount() {return player.points},
     type: "normal",
-    exponent: 0.1,
+    exponent(){return hasMilestone("li",2)?0.05:0},
     gainMult() {
         mult = one
         return mult
     },
     gainExp(){
-        if(!player.li.unlocked) return zero //防止挂机之神偷掉了前面的内容
         exp = one
         return exp
     },
@@ -1596,11 +1612,415 @@ addLayer("li", {
     hotkeys: [
         {key: "k", description: "K: 进行锂重置", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    upgrades:{
+        11:{
+            title: "氦-弱力",
+            description: "基于氦倍增弱力获取",
+            effect(){
+                let eff = player.he.points.max(1)
+                return eff},
+            effectDisplay(){return "x" + format(this.effect())},
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        12:{
+            title: "氦-氢能",
+            description: "基于氦倍增氢能(软上限后)获取",
+            effect(){
+                let eff = player.he.points.max(1)
+                return eff},
+            effectDisplay(){return "x" + format(this.effect())},
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        13:{
+            title: "气球-粒子",
+            description: "基于气球总数量倍增基本粒子获取",
+            effect(){
+                let eff = player.h.balloons.add(player.he.balloons).max(1).pow(2)
+                return eff},
+            effectDisplay(){return "x" + format(this.effect())},
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        14:{
+            title: "气球-氢氦",
+            description: "基于爆炸气球的爆炸平均值倍增氢获取,降低氦价格",
+            effect(){
+                let eff = player.he.boomedNum[0].add(player.he.boomedNum[1]).max(1)
+                return eff},
+            effectDisplay(){return "x,/" + format(this.effect())},
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        21:{
+            title: "弱力优化",
+            description: "基于总夸克倍增弱力获取",
+            effect(){
+                let eff = player.p.quarkMax.max(1).pow(4)
+                eff = eff.max(n(1.1).pow(player.p.quarkMax).min(1e15))
+                return eff},
+            effectDisplay(){return "x" + format(this.effect())},
+            cost(){return five},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        22:{
+            title: "均值优化",
+            description: "'爆炸数量加成'的效果公式现在更好",
+            cost(){return n(15)},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        23:{
+            title: "时间优化",
+            description: "气球爆炸时间上限变为 1h",
+            cost(){return n(500)},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        24:{
+            title: "气球优化",
+            description: "两种气球的获取底数 -0.1",
+            effect(){
+                let eff = n(0.1)
+                return eff},
+            effectDisplay(){return "-" + format(this.effect())},
+            cost(){return n(1500)},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = '#77bf5f';bgcolor = layers[this.layer].color;bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        31:{
+            title: "QNR",
+            description: "夸克不再重置任何东西",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        32:{
+            title: "QAR",
+            description: "解锁自动重置夸克",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        33:{
+            title: "ABPU",
+            description: "解锁自动购买基本粒子升级",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        34:{
+            title: "ABHU",
+            description: "解锁自动购买氢升级",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        35:{
+            title: "ABHeU",
+            description: "解锁自动购买氦升级",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        41:{
+            title: "HNR",
+            description: "氢不再重置任何东西",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        42:{
+            title: "HeNR",
+            description: "氦不再重置任何东西",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        43:{
+            title: "GLNR",
+            description: "转化气体时不再消耗氦和氢能",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        44:{
+            title: "BLNR",
+            description: "填充气球时不再消耗气体",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        45:{
+            title: "AFHE",
+            description: "按比例自动填充内燃机,且不消耗氢",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        51:{
+            title: "AGH",
+            description: "每秒自动获取重置时可获取氢的 10%",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        52:{
+            title: "HeAR",
+            description: "自动重置氦",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        53:{
+            title: "ABHeB",
+            description: "自动购买 氦-3,氦-4,且不消耗氦",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        54:{
+            title: "AGHE",
+            description: "每秒自动获取燃烧时可获取氢能的 100%",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+        55:{
+            title: "AGGL",
+            description: "每秒自动获取转化后获取氢气和氦气的 10%",
+            currencyLayer: "li",
+            currencyInternalName: "perkpoints",
+            currencyDisplayName: "qol点",
+            cost(){return one},
+            unlocked(){return player.li.unlocked},
+            style() {
+                bdcolor = 'yellow';bgcolor = "green";bdr = '10px';tcolor = "black";bscolor = layers[this.layer].color
+                if(!hasUpgrade(this.layer,this.id)&&!canAffordUpgrade(this.layer,this.id)){return ''}
+                else if(!hasUpgrade(this.layer,this.id)&&canAffordUpgrade(this.layer,this.id)){
+                    bdcolor = '';bdr = '20px'
+                }
+                return {'background-color':bgcolor, 'color':tcolor, 'border-color':bdcolor, 'height':'120px', 'width':'120px','border-radius': bdr}
+            },
+        },
+    },
     milestones:{
         0:{
             requirementDescription: "1 锂",
-            effectDescription(){return "基本粒子获取 x10, 氢获取 x4, 氦价格 /16"},
+            effectDescription(){return "基本粒子获取 x10, 氢获取 x4, 氦价格 /16<br>注: 新的第二行重置中, 你可以在不购买'遥远的目标'时解锁燃烧,<br>但氢获取公式中的获取指数仍然有 0.5 的硬上限!"},
             done(){return player.li.points.gte(1)}
+        },
+        1:{
+            requirementDescription: "总共拥有 2 锂",
+            effectDescription(){return "基本粒子获取再 x10"},
+            done(){return player.li.total.gte(2)}
+        },
+        2:{
+            requirementDescription: "购买完锂第一行升级",
+            effectDescription(){return "现在一次重置可以获得多个锂"},
+            done(){return hasUpgrade("li",11)&&hasUpgrade("li",12)&&hasUpgrade("li",13)&&hasUpgrade("li",14)}
         },
     },
     tabFormat:{
@@ -1608,7 +2028,8 @@ addLayer("li", {
             name: "主页",
             content:[
                 "main-display","prestige-button","resource-display",
-                ["display-text",function(){return "这里本来有8个升级的,但是还没做完<br>你可以再玩一遍,墙少了很多,这会让你获得最后一个成就并通关游戏"}]
+                ["row",[["upgrade",11],["upgrade",12],["upgrade",13],["upgrade",14]]],
+                ["row",[["upgrade",21],["upgrade",22],["upgrade",23],["upgrade",24]]],
             ],
             buttonStyle: {
                 "border-color": "#f05c82"
@@ -1628,7 +2049,10 @@ addLayer("li", {
             name: "qol升级",
             content:[
                 ["display-text",function(){return "你有 <h2 style='color:green;text-shadow:0px 0px 10px;'>"+formatWhole(player.li.perkpoints)+"</h2> qol点"}],
-                ["display-text",function(){return quickColor("qol点","green")+"在每次锂重置时获得一个,可以用于购买以下自动化升级,开关在自动化层级中.<br><h1><s>没做完"}],
+                ["display-text",function(){return quickColor("qol点","green")+"在每次锂重置时获得一个,可以用于购买以下自动化升级,开关在自动化层级中."}],
+                ["row",[["upgrade",31],["upgrade",32],["upgrade",33],["upgrade",34],["upgrade",35]]],
+                ["row",[["upgrade",41],["upgrade",42],["upgrade",43],["upgrade",44],["upgrade",45]]],
+                ["row",[["upgrade",51],["upgrade",52],["upgrade",53],["upgrade",54],["upgrade",55]]],
             ],
             buttonStyle: {
                 "border-color": "green"
